@@ -1,0 +1,39 @@
+{
+
+  "name": "stickers-api-server",
+
+  "private": true,
+
+  "type": "module",
+
+  "scripts": {
+
+    "build": "esbuild run.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs --alias:electron=./electron-shim.ts --alias:@electron-toolkit/utils=./electron-shim.ts"
+
+  },
+
+  "dependencies": {
+
+    "clipboardy": "^4.0.0",
+
+    "cors": "^2.8.6",
+
+    "express": "^5.2.1",
+
+    "sharp": "^0.34.3"
+
+  },
+
+  "devDependencies": {
+
+    "@types/express": "^5.0.0",
+
+    "esbuild": "^0.25.0",
+
+    "typescript": "^5.9.3"
+
+  }
+
+}
+
+

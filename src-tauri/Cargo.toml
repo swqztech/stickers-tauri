@@ -1,0 +1,17 @@
+[package]
+name = "stickers_tauri"
+version = "1.0.0"
+description = "Stickers board"
+authors = ["codes"]
+edition = "2021"
+
+[lib]
+name = "stickers_tauri_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"

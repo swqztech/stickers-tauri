@@ -1,0 +1,7 @@
+node_modules/
+dist/
+stickers-server/node_modules/
+stickers-server/dist/
+src-tauri/target/
+*.log
+tsconfig.tsbuildinfo
