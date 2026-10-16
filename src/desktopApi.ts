@@ -8,6 +8,20 @@ import { save, open } from '@tauri-apps/plugin-dialog'
 
 const API = 'http://127.0.0.1:3923'
 
+export async function waitForApiReady(maxMs = 45_000): Promise<boolean> {
+  const deadline = Date.now() + maxMs
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`${API}/health`, { signal: AbortSignal.timeout(2_000) })
+      if (res.ok) return true
+    } catch {
+      /* 侧车启动中 */
+    }
+    await new Promise((r) => setTimeout(r, 300))
+  }
+  return false
+}
+
 export type WorkspaceSnapshot = {
   activeSpaceId: string
   spaces: Array<{
@@ -44,13 +58,10 @@ export type ClipboardExportResult = {
 async function ipc<T>(channel: string, ...args: unknown[]): Promise<T> {
 
   const res = await fetch(`${API}/invoke`, {
-
     method: 'POST',
-
     headers: { 'Content-Type': 'application/json' },
-
-    body: JSON.stringify({ channel, args })
-
+    body: JSON.stringify({ channel, args }),
+    signal: AbortSignal.timeout(120_000),
   })
 
   const data = (await res.json()) as { ok?: boolean; result?: T; error?: string }

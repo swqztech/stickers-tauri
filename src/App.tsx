@@ -227,6 +227,14 @@ export default function App() {
     let cancelled = false
     ;(async () => {
       try {
+        const apiUp = await import('./desktopApi').then((m) => m.waitForApiReady())
+        if (cancelled) return
+        if (!apiUp) {
+          setToast('贴纸服务未启动，请完全退出后重新打开应用')
+          setReady(true)
+          skipSave.current = false
+          return
+        }
         if (typeof window.api.getWorkspaceSnapshot === 'function') {
           const snap = await window.api.getWorkspaceSnapshot()
           if (cancelled) return

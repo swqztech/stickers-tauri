@@ -8,7 +8,7 @@
 
   "scripts": {
 
-    "build": "esbuild run.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs --alias:electron=./electron-shim.ts --alias:@electron-toolkit/utils=./electron-shim.ts"
+    "build": "esbuild run.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs --packages=external --alias:electron=./electron-shim.ts --alias:@electron-toolkit/utils=./electron-shim.ts"
 
   },
 

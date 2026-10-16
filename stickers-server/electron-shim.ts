@@ -1,8 +1,17 @@
 import { EventEmitter } from 'node:events'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import clipboardy from 'clipboardy'
 import fs from 'node:fs'
+
+type ClipboardyModule = {
+  readSync: () => string
+  writeSync: (data: string | Buffer) => void
+}
+
+function clipboardy(): ClipboardyModule {
+  // 运行时从侧车目录 node_modules 加载（esbuild --packages=external）
+  return require('clipboardy') as ClipboardyModule
+}
 
 type IpcHandler = (event: unknown, ...args: unknown[]) => unknown
 
@@ -76,13 +85,13 @@ export const ipcMain = {
 export const clipboard = {
   readText() {
     try {
-      return clipboardy.readSync()
+      return clipboardy().readSync()
     } catch {
       return ''
     }
   },
   writeText(text: string) {
-    clipboardy.writeSync(text)
+    clipboardy().writeSync(text)
   },
   readImage() {
     return nativeImage.createFromBuffer(Buffer.alloc(0))
@@ -90,7 +99,7 @@ export const clipboard = {
   writeImage(img: { toPNG: () => Buffer }) {
     const png = img.toPNG()
     if (png.length) {
-      clipboardy.writeSync(png)
+      clipboardy().writeSync(png)
     }
   }
 }
