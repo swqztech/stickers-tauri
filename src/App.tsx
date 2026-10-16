@@ -60,14 +60,7 @@ type WorkspaceMeta = {
   count: number
 }
 
-type WorkspaceSnapshot = {
-  activeSpaceId: string
-  spaces: WorkspaceMeta[]
-  history: ClipboardItem[]
-  stickers: Sticker[]
-  folders: StickerFolder[]
-  alwaysOnTop: boolean
-}
+import type { WorkspaceSnapshot } from './desktopApi'
 
 const COLORS: { id: StickerColor; label: string }[] = [
   { id: 'lemon', label: '柠檬' },
@@ -204,16 +197,23 @@ export default function App() {
     skipSave.current = true
     activeSpaceIdRef.current = state.activeSpaceId
     setActiveSpaceId(state.activeSpaceId)
-    setClipboardSpaces(Array.isArray(state.spaces) ? state.spaces : [])
-    if (Array.isArray(state.history)) setClipboardHistory(state.history)
+    setClipboardSpaces(
+      Array.isArray(state.spaces) ? (state.spaces as WorkspaceMeta[]) : [],
+    )
+    if (Array.isArray(state.history))
+      setClipboardHistory(state.history as ClipboardItem[])
     // 文件夹随空间走：即使为空也要覆盖，避免上个空间的文件夹残留
     if (!opts?.skipStickers) {
       const nextFolders = Array.isArray(state.folders)
-        ? state.folders.map((f) => ({ ...f }))
+        ? (state.folders as StickerFolder[]).map((f) => ({ ...f }))
         : []
       foldersRef.current = nextFolders
       setFolders(nextFolders)
-      setStickers(Array.isArray(state.stickers) ? state.stickers.map((s) => ({ ...s })) : [])
+      setStickers(
+        Array.isArray(state.stickers)
+          ? (state.stickers as Sticker[]).map((s) => ({ ...s }))
+          : [],
+      )
       setOpenFolderId(null)
       openFolderIdRef.current = null
     }
@@ -1342,7 +1342,9 @@ export default function App() {
         )
         return
       }
-      setClipboardHistory(Array.isArray(res.history) ? res.history : [])
+      setClipboardHistory(
+        Array.isArray(res.history) ? (res.history as ClipboardItem[]) : [],
+      )
       setToast(`已导入：新增 ${res.added}`)
     } catch (err) {
       setToast(err instanceof Error ? err.message : String(err))
