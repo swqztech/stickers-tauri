@@ -18,7 +18,7 @@
 
     "build": "vite build",
 
-    "build:api": "cd stickers-server && npm install && npm run build && node -e \"const fs=require('fs');const p='../src-tauri/resources/stickers-api';fs.mkdirSync(p,{recursive:true});fs.copyFileSync('dist/server.cjs',p+'/server.cjs');\"",
+    "build:api": "cd stickers-server && npm install && npm run build && node ../scripts/prepare-stickers-runtime.mjs",
 
     "build:client": "npm run build:api && npm run build && npm run tauri build",
 

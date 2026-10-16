@@ -3,6 +3,7 @@ use std::process::{Child, Command, Stdio};
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
 use std::sync::Mutex;
+use std::time::Duration;
 use tauri::{AppHandle, Manager};
 
 static API_CHILD: Mutex<Option<Child>> = Mutex::new(None);
@@ -11,7 +12,7 @@ static API_CHILD: Mutex<Option<Child>> = Mutex::new(None);
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 fn which_node() -> Result<PathBuf, String> {
-    let node = Command::new("where")
+    Command::new("where")
         .arg("node")
         .output()
         .ok()
@@ -23,9 +24,9 @@ fn which_node() -> Result<PathBuf, String> {
             } else {
                 None
             }
-        });
-    node.filter(|p| p.is_file())
-        .ok_or_else(|| "Node.js not found on PATH.".into())
+        })
+        .filter(|p| p.is_file())
+        .ok_or_else(|| "Node.js not found on PATH (required for dev).".into())
 }
 
 fn spawn_node(node: &Path, script: &Path, cwd: &Path) -> Result<(), String> {
@@ -39,8 +40,26 @@ fn spawn_node(node: &Path, script: &Path, cwd: &Path) -> Result<(), String> {
     #[cfg(windows)]
     cmd.creation_flags(CREATE_NO_WINDOW);
     let child = cmd.spawn().map_err(|e| e.to_string())?;
-    *API_CHILD.lock().map_err(|e| e.to_string())? = Some(child);
-    Ok(())
+    if let Ok(mut guard) = API_CHILD.lock() {
+        *guard = Some(child);
+    }
+    wait_health()
+}
+
+fn wait_health() -> Result<(), String> {
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(2))
+        .build()
+        .map_err(|e| e.to_string())?;
+    for _ in 0..40 {
+        if let Ok(res) = client.get("http://127.0.0.1:3923/health").send() {
+            if res.status().is_success() {
+                return Ok(());
+            }
+        }
+        std::thread::sleep(Duration::from_millis(250));
+    }
+    Err("Stickers API health check timed out.".into())
 }
 
 pub fn spawn_stickers_api(app: &AppHandle) -> Result<(), String> {
@@ -49,7 +68,11 @@ pub fn spawn_stickers_api(app: &AppHandle) -> Result<(), String> {
             resource_dir.join("stickers-api"),
             resource_dir.join("resources").join("stickers-api"),
         ] {
+            let node = api_dir.join("node.exe");
             let script = api_dir.join("server.cjs");
+            if node.is_file() && script.is_file() {
+                return spawn_node(&node, &script, &api_dir);
+            }
             if script.is_file() {
                 let node = which_node()?;
                 return spawn_node(&node, &script, &api_dir);

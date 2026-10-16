@@ -3,5 +3,12 @@ dist/
 stickers-server/node_modules/
 stickers-server/dist/
 src-tauri/target/
+src-tauri/resources/stickers-api/node.exe
+src-tauri/resources/stickers-api/server.cjs
+src-tauri/resources/stickers-api/node_modules/
+src-tauri/resources/stickers-api/package.json
+src-tauri/resources/stickers-api/package-lock.json
+src-tauri/resources/stickers-api/*.zip
+src-tauri/resources/stickers-api/_extract/
 *.log
 tsconfig.tsbuildinfo
